@@ -1,159 +1,458 @@
-
--- 1. Calcule a média de quantidade de estoque dos produtos.
-
-SELECT AVG(quantidade_estoque) AS media_estoque
-FROM Produtos;
+create database db_conveniencia;
 
 
-
--- 2. Liste as 3 datas em que mais vendas foram feitas.
-
-SELECT TOP 3 data_venda, COUNT(*) AS total_vendas
-FROM Vendas
-GROUP BY data_venda
-ORDER BY total_vendas DESC;
-
--- 3.  Calcule o total de vendas e a média de vendas por cliente.
-
-WITH VendaProdutoCount AS (
-    SELECT 
-        v.cod_cliente_fk,
-        COUNT(pv.codProdVenda) AS total_produtos_vendidos
-    FROM 
-        Vendas v
-    JOIN 
-        Produtos_Vendas pv ON v.codVenda = pv.cod_venda_fk
-    GROUP BY 
-        v.cod_cliente_fk
-)
-
-SELECT 
-    c.cod_cliente,
-    c.nome_cliente,
-    ISNULL(vp.total_produtos_vendidos, 0) AS total_produtos_vendidos,
-    AVG(vp.total_produtos_vendidos) OVER() AS media_produtos_vendidos
-FROM 
-    Clientes c
-LEFT JOIN 
-    VendaProdutoCount vp ON c.cod_cliente = vp.cod_cliente_fk;
-
--- 4. Calcule a média de vendas por cliente e ordene pelo código do cliente.
-
-WITH VendaProdutoCount AS (
-    SELECT 
-        v.cod_cliente_fk,
-        COUNT(pv.codProdVenda) AS total_produtos_vendidos
-    FROM 
-        Vendas v
-    JOIN 
-        Produtos_Vendas pv ON v.codVenda = pv.cod_venda_fk
-    GROUP BY 
-        v.cod_cliente_fk
-)
-
-SELECT 
-    c.cod_cliente,
-    c.nome_cliente,
-    ISNULL(vp.total_produtos_vendidos, 0) AS total_produtos_vendidos,
-    AVG(vp.total_produtos_vendidos) OVER() AS media_produtos_vendidos
-FROM 
-    Clientes c
-LEFT JOIN 
-    VendaProdutoCount vp ON c.cod_cliente = vp.cod_cliente_fk
-ORDER BY 
-    c.cod_cliente;
+create table Clientes(
+cod_cliente int primary key not null,
+nome_cliente varchar(50),
+dt_cadastro_cliente varchar(10));
 
 
--- 5. Liste os clientes que fizeram vendas em uma data específica, por exemplo, '2023-06-15', utilizando uma subconsulta para filtrar as vendas por data.
 
-SELECT 
-    c.cod_cliente,
-    c.nome_cliente
-FROM 
-    Clientes c
-WHERE 
-    c.cod_cliente IN (
-        SELECT 
-            v.cod_cliente_fk
-        FROM 
-            Vendas v
-        WHERE 
-            v.dt_venda = '2023-06-15'
-    );
-
--- 6. Liste os produtos que têm uma quantidade de estoque abaixo da média, utilizando uma subconsulta para calcular a média de estoque.
-
-SELECT 
-    p.cod_produto,
-    p.nome_produto,
-    p.qtd_estoque
-FROM 
-    Produtos p
-WHERE 
-    p.qtd_estoque < (
-        SELECT 
-            AVG(qtd_estoque)
-        FROM 
-            Produtos
-    );
+create table Produtos(
+cod_produto int primary key not null,
+qtd_estoque int not null,
+nome_produto varchar(100));
 
 
--- 07. Liste as datas em que o número de vendas foi acima da média, utilizando uma subconsulta para calcular a média de vendas por data. 
+create table Vendas(
+codVenda int primary key not null,
+dt_venda varchar(10) not null,
+cod_cliente_fk int not null,
+foreign key(cod_cliente_fk) references Clientes(cod_cliente)
+);
 
-WITH VendasPorData AS (
-    SELECT 
-        dt_venda,
-        COUNT(codVenda) AS total_vendas
-    FROM 
-        Vendas
-    GROUP BY 
-        dt_venda
-)
 
-SELECT 
-    v.dt_venda,
-    v.total_vendas
-FROM 
-    VendasPorData v
-WHERE 
-    v.total_vendas > (
-        SELECT 
-            AVG(total_vendas)
-        FROM 
-            VendasPorData
-    );
 
--- 8. Calcular a soma total das quantidades de estoque dos produtos vendidos e comparar com a média geral de estoque.
+create table Produtos_Vendas(
+codProdVenda int not null primary key,
+cod_venda_fk int not null,
+cod_produto_fk int not null,
+foreign key(cod_venda_fk) references Vendas(codVenda),
+foreign key(cod_produto_fk) references Produtos(cod_produto)
+);
 
-WITH EstoqueVendido AS (
-    SELECT 
-        p.cod_produto,
-        p.qtd_estoque AS estoque_vendido
-    FROM 
-        Produtos p
-    JOIN 
-        Produtos_Vendas pv ON p.cod_produto = pv.cod_produto_fk
-    GROUP BY 
-        p.cod_produto, p.qtd_estoque
-),
 
-SomaEstoqueVendido AS (
-    SELECT 
-        SUM(estoque_vendido) AS total_estoque_vendido
-    FROM 
-        EstoqueVendido
-),
+insert into Clientes(cod_cliente,nome_cliente,dt_cadastro_cliente)
+VALUES
+(1,'Cliente 1','2023-01-02'),
+(2,'Cliente 2','2023-01-03'),
+(3,'Cliente 3','2023-01-04'),
+(4,'Cliente 4','2023-01-05'),
+(5,'Cliente 5','2023-01-06'),
+(6,'Cliente 6','2023-01-07'),
+(7,'Cliente 7','2023-01-08'),
+(8,'Cliente 8','2023-01-09'),
+(9,'Cliente 9','2023-01-10'),
+(10,'Cliente 10','2023-01-11'),
+(11,'Cliente 11','2023-01-12'),
+(12,'Cliente 12','2023-01-13'),
+(13,'Cliente 13','2023-01-14'),
+(14,'Cliente 14','2023-01-15'),
+(15,'Cliente 15','2023-01-16'),
+(16,'Cliente 16','2023-01-17'),
+(17,'Cliente 17','2023-01-18'),
+(18,'Cliente 18','2023-01-19'),
+(19,'Cliente 19','2023-01-20'),
+(20,'Cliente 20','2023-01-21'),
+(21,'Cliente 21','2023-01-22'),
+(22,'Cliente 22','2023-01-23'),
+(23,'Cliente 23','2023-01-24'),
+(24,'Cliente 24','2023-01-25'),
+(25,'Cliente 25','2023-01-26'),
+(26,'Cliente 26','2023-01-27'),
+(27,'Cliente 27','2023-01-28'),
+(28,'Cliente 28','2023-01-29'),
+(29,'Cliente 29','2023-01-30'),
+(30,'Cliente 30','2023-01-31'),
+(31,'Cliente 31','2023-02-01'),
+(32,'Cliente 32','2023-02-02'),
+(33,'Cliente 33','2023-02-03'),
+(34,'Cliente 34','2023-02-04'),
+(35,'Cliente 35','2023-02-05'),
+(36,'Cliente 36','2023-02-06'),
+(37,'Cliente 37','2023-02-07'),
+(38,'Cliente 38','2023-02-08'),
+(39,'Cliente 39','2023-02-09'),
+(40,'Cliente 40','2023-02-10'),
+(41,'Cliente 41','2023-02-11'),
+(42,'Cliente 42','2023-02-12'),
+(43,'Cliente 43','2023-02-13'),
+(44,'Cliente 44','2023-02-14'),
+(45,'Cliente 45','2023-02-15'),
+(46,'Cliente 46','2023-02-16'),
+(47,'Cliente 47','2023-02-17'),
+(48,'Cliente 48','2023-02-18'),
+(49,'Cliente 49','2023-02-19'),
+(50,'Cliente 50','2023-02-20'),
+(51,'Cliente 51','2023-02-21'),
+(52,'Cliente 52','2023-02-22'),
+(53,'Cliente 53','2023-02-23'),
+(54,'Cliente 54','2023-02-24'),
+(55,'Cliente 55','2023-02-25'),
+(56,'Cliente 56','2023-02-26'),
+(57,'Cliente 57','2023-02-27'),
+(58,'Cliente 58','2023-02-28'),
+(59,'Cliente 59','2023-03-01'),
+(60,'Cliente 60','2023-03-02'),
+(61,'Cliente 61','2023-03-03'),
+(62,'Cliente 62','2023-03-04'),
+(63,'Cliente 63','2023-03-05'),
+(64,'Cliente 64','2023-03-06'),
+(65,'Cliente 65','2023-03-07'),
+(66,'Cliente 66','2023-03-08'),
+(67,'Cliente 67','2023-03-09'),
+(68,'Cliente 68','2023-03-10'),
+(69,'Cliente 69','2023-03-11'),
+(70,'Cliente 70','2023-03-12'),
+(71,'Cliente 71','2023-03-13'),
+(72,'Cliente 72','2023-03-14'),
+(73,'Cliente 73','2023-03-15'),
+(74,'Cliente 74','2023-03-16'),
+(75,'Cliente 75','2023-03-17'),
+(76,'Cliente 76','2023-03-18'),
+(77,'Cliente 77','2023-03-19'),
+(78,'Cliente 78','2023-03-20'),
+(79,'Cliente 79','2023-03-21'),
+(80,'Cliente 80','2023-03-22'),
+(81,'Cliente 81','2023-03-23'),
+(82,'Cliente 82','2023-03-24'),
+(83,'Cliente 83','2023-03-25'),
+(84,'Cliente 84','2023-03-26'),
+(85,'Cliente 85','2023-03-27'),
+(86,'Cliente 86','2023-03-28'),
+(87,'Cliente 87','2023-03-29'),
+(88,'Cliente 88','2023-03-30'),
+(89,'Cliente 89','2023-03-31'),
+(90,'Cliente 90','2023-04-01'),
+(91,'Cliente 91','2023-04-02'),
+(92,'Cliente 92','2023-04-03'),
+(93,'Cliente 93','2023-04-04'),
+(94,'Cliente 94','2023-04-05'),
+(95,'Cliente 95','2023-04-06'),
+(96,'Cliente 96','2023-04-07'),
+(97,'Cliente 97','2023-04-08'),
+(98,'Cliente 98','2023-04-09'),
+(99,'Cliente 99','2023-04-10'),
+(100,'Cliente 100','2023-04-11');
 
-MediaEstoque AS (
-    SELECT 
-        AVG(qtd_estoque) AS media_estoque
-    FROM 
-        Produtos
-)
 
-SELECT 
-    s.total_estoque_vendido,
-    m.media_estoque
-FROM 
-    SomaEstoqueVendido s, MediaEstoque m;
+insert into Produtos(cod_produto,qtd_estoque,nome_produto)
+VALUES
+(1,'84','Produto B1'),
+(2,'345','Produto C2'),
+(3,'462','Produto D3'),
+(4,'157','Produto E4'),
+(5,'486','Produto F5'),
+(6,'371','Produto G6'),
+(7,'53','Produto H7'),
+(8,'388','Produto I8'),
+(9,'213','Produto J9'),
+(10,'458','Produto K10'),
+(11,'451','Produto L11'),
+(12,'443','Produto M12'),
+(13,'261','Produto N13'),
+(14,'173','Produto O14'),
+(15,'291','Produto P15'),
+(16,'276','Produto Q16'),
+(17,'224','Produto R17'),
+(18,'306','Produto S18'),
+(19,'110','Produto T19'),
+(20,'321','Produto U20'),
+(21,'408','Produto V21'),
+(22,'42','Produto W22'),
+(23,'406','Produto X23'),
+(24,'340','Produto Y24'),
+(25,'422','Produto Z25'),
+(26,'206','Produto A26'),
+(27,'58','Produto B27'),
+(28,'214','Produto C28'),
+(29,'134','Produto D29'),
+(30,'326','Produto E30'),
+(31,'331','Produto F31'),
+(32,'382','Produto G32'),
+(33,'328','Produto H33'),
+(34,'287','Produto I34'),
+(35,'330','Produto J35'),
+(36,'445','Produto K36'),
+(37,'392','Produto L37'),
+(38,'203','Produto M38'),
+(39,'243','Produto N39'),
+(40,'434','Produto O40'),
+(41,'427','Produto P41'),
+(42,'25','Produto Q42'),
+(43,'346','Produto R43'),
+(44,'106','Produto S44'),
+(45,'83','Produto T45'),
+(46,'253','Produto U46'),
+(47,'291','Produto V47'),
+(48,'331','Produto W48'),
+(49,'97','Produto X49'),
+(50,'405','Produto Y50'),
+(51,'240','Produto Z51'),
+(52,'456','Produto A52'),
+(53,'246','Produto B53'),
+(54,'436','Produto C54'),
+(55,'362','Produto D55'),
+(56,'497','Produto E56'),
+(57,'5','Produto F57'),
+(58,'102','Produto G58'),
+(59,'115','Produto H59'),
+(60,'97','Produto I60'),
+(61,'464','Produto J61'),
+(62,'486','Produto K62'),
+(63,'398','Produto L63'),
+(64,'283','Produto M64'),
+(65,'469','Produto N65'),
+(66,'326','Produto O66'),
+(67,'322','Produto P67'),
+(68,'108','Produto Q68'),
+(69,'229','Produto R69'),
+(70,'305','Produto S70'),
+(71,'24','Produto T71'),
+(72,'31','Produto U72'),
+(73,'29','Produto V73'),
+(74,'329','Produto W74'),
+(75,'307','Produto X75'),
+(76,'317','Produto Y76'),
+(77,'479','Produto Z77'),
+(78,'256','Produto A78'),
+(79,'158','Produto B79'),
+(80,'471','Produto C80'),
+(81,'233','Produto D81'),
+(82,'139','Produto E82'),
+(83,'356','Produto F83'),
+(84,'424','Produto G84'),
+(85,'122','Produto H85'),
+(86,'316','Produto I86'),
+(87,'268','Produto J87'),
+(88,'201','Produto K88'),
+(89,'18','Produto L89'),
+(90,'383','Produto M90'),
+(91,'307','Produto N91'),
+(92,'167','Produto O92'),
+(93,'299','Produto P93'),
+(94,'448','Produto Q94'),
+(95,'191','Produto R95'),
+(96,'125','Produto S96'),
+(97,'446','Produto T97'),
+(98,'461','Produto U98'),
+(99,'8','Produto V99'),
+(100,'294','Produto W100');
 
+
+insert into Vendas(codVenda,dt_venda,cod_cliente_fk)
+VALUES
+(1,'2023-01-07',50),
+(2,'2023-01-08',58),
+(3,'2023-01-09',87),
+(4,'2023-01-10',88),
+(5,'2023-01-11',29),
+(6,'2023-01-12',36),
+(7,'2023-01-13',88),
+(8,'2023-01-14',29),
+(9,'2023-01-15',93),
+(10,'2023-01-16',35),
+(11,'2023-01-17',5),
+(12,'2023-01-18',44),
+(13,'2023-01-19',90),
+(14,'2023-01-20',10),
+(15,'2023-01-21',96),
+(16,'2023-01-22',63),
+(17,'2023-01-23',80),
+(18,'2023-01-24',85),
+(19,'2023-01-25',30),
+(20,'2023-01-26',78),
+(21,'2023-01-27',27),
+(22,'2023-01-28',69),
+(23,'2023-01-29',71),
+(24,'2023-01-30',73),
+(25,'2023-01-31',71),
+(26,'2023-02-01',87),
+(27,'2023-02-02',99),
+(28,'2023-02-03',60),
+(29,'2023-02-04',43),
+(30,'2023-02-05',84),
+(31,'2023-02-06',25),
+(32,'2023-02-07',24),
+(33,'2023-02-08',53),
+(34,'2023-02-09',50),
+(35,'2023-02-10',8),
+(36,'2023-02-11',72),
+(37,'2023-02-12',68),
+(38,'2023-02-13',83),
+(39,'2023-02-14',10),
+(40,'2023-02-15',98),
+(41,'2023-02-16',38),
+(42,'2023-02-17',21),
+(43,'2023-02-18',33),
+(44,'2023-02-19',39),
+(45,'2023-02-20',45),
+(46,'2023-02-21',88),
+(47,'2023-02-22',100),
+(48,'2023-02-23',75),
+(49,'2023-02-24',68),
+(50,'2023-02-25',98),
+(51,'2023-02-26',69),
+(52,'2023-02-27',52),
+(53,'2023-02-28',68),
+(54,'2023-03-01',66),
+(55,'2023-03-02',69),
+(56,'2023-03-03',63),
+(57,'2023-03-04',14),
+(58,'2023-03-05',79),
+(59,'2023-03-06',3),
+(60,'2023-03-07',59),
+(61,'2023-03-08',64),
+(62,'2023-03-09',48),
+(63,'2023-03-10',85),
+(64,'2023-03-11',21),
+(65,'2023-03-12',24),
+(66,'2023-03-13',25),
+(67,'2023-03-14',17),
+(68,'2023-03-15',16),
+(69,'2023-03-16',43),
+(70,'2023-03-17',56),
+(71,'2023-03-18',34),
+(72,'2023-03-19',34),
+(73,'2023-03-20',17),
+(74,'2023-03-21',50),
+(75,'2023-03-22',7),
+(76,'2023-03-23',37),
+(77,'2023-03-24',86),
+(78,'2023-03-25',52),
+(79,'2023-03-26',86),
+(80,'2023-03-27',57),
+(81,'2023-03-28',49),
+(82,'2023-03-29',65),
+(83,'2023-03-30',54),
+(84,'2023-03-31',87),
+(85,'2023-04-01',100),
+(86,'2023-04-02',43),
+(87,'2023-04-03',91),
+(88,'2023-04-04',85),
+(89,'2023-04-05',62),
+(90,'2023-04-06',53),
+(91,'2023-04-07',58),
+(92,'2023-04-08',78),
+(93,'2023-04-09',26),
+(94,'2023-04-10',92),
+(95,'2023-04-11',60),
+(96,'2023-04-12',16),
+(97,'2023-04-13',11),
+(98,'2023-04-14',12),
+(99,'2023-04-15',68),
+(100,'2023-04-16',23);
+
+
+
+
+insert into Produtos_Vendas(codProdVenda,cod_venda_fk,cod_produto_fk)
+VALUES
+(1,97,52),
+(2,78,11),
+(3,80,63),
+(4,48,42),
+(5,63,29),
+(6,78,62),
+(7,6,36),
+(8,78,50),
+(9,74,100),
+(10,7,15),
+(11,59,89),
+(12,39,88),
+(13,32,72),
+(14,69,80),
+(15,56,25),
+(16,11,18),
+(17,35,19),
+(18,81,6),
+(19,67,63),
+(20,54,63),
+(21,37,48),
+(22,84,23),
+(23,78,60),
+(24,37,49),
+(25,25,19),
+(26,44,49),
+(27,68,15),
+(28,7,42),
+(29,21,62),
+(30,5,19),
+(31,96,20),
+(32,84,64),
+(33,9,29),
+(34,50,69),
+(35,7,44),
+(36,17,54),
+(37,49,66),
+(38,96,80),
+(39,79,7),
+(40,53,23),
+(41,40,8),
+(42,49,50),
+(43,79,92),
+(44,98,20),
+(45,77,5),
+(46,79,61),
+(47,93,23),
+(48,10,91),
+(49,31,69),
+(50,5,90),
+(51,28,78),
+(52,82,13),
+(53,88,84),
+(54,18,67),
+(55,74,64),
+(56,49,89),
+(57,11,32),
+(58,90,67),
+(59,65,77),
+(60,24,31),
+(61,42,46),
+(62,89,44),
+(63,48,78),
+(64,69,77),
+(65,91,86),
+(66,65,24),
+(67,50,23),
+(68,99,27),
+(69,91,90),
+(70,83,13),
+(71,62,68),
+(72,85,56),
+(73,100,48),
+(74,17,59),
+(75,28,42),
+(76,59,75),
+(77,69,60),
+(78,46,3),
+(79,67,52),
+(80,57,69),
+(81,86,89),
+(82,31,23),
+(83,70,62),
+(84,91,72),
+(85,53,93),
+(86,38,58),
+(87,55,40),
+(88,39,55),
+(89,74,73),
+(90,8,48),
+(91,55,55),
+(92,60,34),
+(93,78,34),
+(94,80,46),
+(95,67,70),
+(96,85,62),
+(97,69,49),
+(98,27,92),
+(99,27,38),
+(100,80,65)
+
+
+
+
+
+
+query_banco.sql
+Exibindo query_banco.sqlÂ…
